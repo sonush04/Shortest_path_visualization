@@ -1,0 +1,583 @@
+<!doctype html>
+<html>
+<head>
+<title>Finding path</title>
+	<link rel="stylesheet" href="cssfornav.css">
+<style>
+		.sbutton{
+			  background-color: blue;
+			  color: black;
+			  border: 2px solid #4CAF50;
+			  -webkit-transition-duration: 0.4s; /* Safari */
+			  transition-duration: 0.4s;
+			border-radius:30px;
+			width:500px;
+			height:45px;
+			font-size:30px;
+			}
+		.sbutton:hover {
+			  background-color: blue; /* Green */
+			  color: white;
+			cursor: grab;
+			}
+    td{
+        cursor:pointer;
+        background: -moz-linear-gradient(top, #ffffff, #D1E3E9);
+        background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#D1E3E9));
+        text-align:center;
+        width: 12px;
+        height:20px;
+    }
+ 
+    td:hover{
+        background: -moz-linear-gradient(top, #249ee4, #057cc0);
+        background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#249ee4), to(#057cc0));
+    }
+ 
+    td:active
+    {
+        background: -moz-linear-gradient(top, #057cc0, #249ee4);
+        background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#057cc0), to(#249ee4));
+    }
+ 
+    #result{
+        font-weight:bold;
+        font-size:16pt;
+    }
+</style>
+<!--JAVASCRIPT -->
+<script  src="http://code.jquery.com/jquery-1.9.1.min.js" ></script> 
+<script>
+var origin_row;
+var origin_col;
+var ter_row;
+var ter_col;
+var wall = [];
+var W = new Array(2500);
+var algo;
+var p = [];
+function board() {
+    
+    var table = document.getElementById("myTable");
+    for(var i = 0;i<50;i++){
+	   var row = table.insertRow(-1);
+	   for(var j = 0;j<50;j++){	
+		      var cell = row.insertCell(-1);
+                cell.id = i+1+"_"+eval("j+1");
+               
+       }
+	   }
+            for(var i = 0;i<2500;i++){
+        //graph[i] = [];
+        W[i] = 0;
+    }
+    }
+var res = document.getElementById("result");
+res.innerHTML= "hi" ;   
+
+var temp2,temp3;
+function origin(){
+        var mytable = document.getElementById("myTable");
+        mytable.addEventListener("mousemove", ori);
+        //mytable.removeEventListener("mousemove",Walling);
+        mytable.onclick = function(){
+                mytable.removeEventListener("mousemove", ori);
+            }
+       
+}
+function ori(e){
+         if(!e)
+            e = window.event;
+        
+        var target = e.srcElement || e.element;
+        if(temp2)
+            temp2.innerHTML = "";
+            var arr = target.id.split('_');
+            origin_row = arr[0];
+            origin_col = arr[1]; 
+             if(ter_col == origin_col && ter_row == origin_row){
+                window.alert("source and terminal cannot be same");
+                ori;
+            }else{
+            target.innerHTML = "s";
+            temp2 = target;
+
+        }
+    
+}
+var temp1;
+function end(){
+        var mytable = document.getElementById("myTable");
+        mytable.addEventListener("mousemove", en);
+       // mytable.removeEventListener("mousemove",Walling);
+        mytable.onclick = function(){
+                mytable.removeEventListener("mousemove", en);
+            }
+}
+function en(e){
+         if(!e)
+            e = window.event;
+        
+        var target = e.srcElement || e.element;
+        if(temp1)
+            temp1.innerHTML = "";
+            var arr1 = target.id.split('_');
+            ter_row = arr1[0];
+            ter_col = arr1[1]; 
+            if(ter_col == origin_col && ter_row == origin_row){
+                window.alert("source and terminal cannot be same");
+                en;
+            }else{
+            target.innerHTML = "t";
+            temp1 = target;
+            
+              
+            }
+     e.stopImmediatePropagation(); 
+        }
+function construct_graph(){
+    let graph = new Array(50*50);
+    for(var i = 0;i<2500;i++){
+        graph[i] = new Array(4);
+    }
+    for(var i =0;i<2500;i++){
+        for(var j= 0;j<4;j++)
+            graph[i][j] = Infinity;
+    }
+    for(var i =0;i<2500;i++){
+        if((i%50)-1 >= 0)
+            graph[i][0] = i-1;
+        if((i%50)+1 < 50)
+            graph[i][1] = i+1;
+        if(i-50 >= 0)
+            graph[i][2] = i-50;
+        if(i+50 < 2500)
+            graph[i][3] = i+50;
+    }
+    return graph;
+}
+// queue implementation
+
+function Queue() {
+   this.elements = [];
+Queue.prototype.enqueue = function (e) {
+   this.elements.push(e);
+};
+Queue.prototype.dequeue = function () {
+    return this.elements.shift();
+};
+Queue.prototype.isEmpty = function () {
+    return this.elements.length == 0;
+};
+Queue.prototype.peek = function () {
+    return !this.isEmpty() ? this.elements[0] : undefined;
+};
+}
+// stack implementation
+function Stack() {
+   this.dataStore = [];
+   this.top = 0;
+   this.push = push;
+   this.pop = pop;
+   this.peek = peek;
+   this.clear = clear;
+   this.length = length;
+}
+
+function push(element) {
+   this.dataStore[this.top++] = element;
+}
+
+function peek() {
+   return this.dataStore[this.top-1];
+}
+
+function pop() {
+   return this.dataStore[--this.top];
+}
+
+function clear() {
+   this.top = 0;
+}
+
+function length() {
+   return this.top;
+}
+
+function construct_graphW(){
+let graph = new Array(50*50);
+    for(var i = 0;i<2500;i++){
+        graph[i] = [];
+      //  W[i] = 0;
+    }
+    for(var i =0;i<2500;i++){
+        for(var j= 0;j<2500;j++)
+            graph[i][j] = Infinity;
+    }
+    for(var i =0;i<2500;i++){
+        var t =1;
+        for(var j = 0;j<wall.length;j++){
+            if(wall[j] == i)
+                t = 0;
+        }//window.alert("hi");
+        //if(t == 1){
+        if((i%50)-1 >= 0)
+            graph[i][i-1] = 1;
+        if((i%50)+1 < 50)
+            graph[i][i+1] = 1;
+        if(i-50 >= 0)
+            graph[i][i-50] = 1;
+        if(i+50 < 2500)
+            graph[i][i+50] = 1;
+    //}
+    }
+    return graph;
+}    
+
+// dijkstra algorithm
+
+
+function dijkstra() {
+   
+    var graph = construct_graph();
+    
+    var startVertex = (origin_row-1)*50 + eval(" origin_col-1");
+    var endVertex = (ter_row-1)*50 + eval("ter_col-1");
+    const distances = {};
+  const visitedVertices = {};
+   
+  for(var i = 0;i<2500;i++){
+      distances[i] = Infinity;
+      visitedVertices[i] = false;
+  }
+
+  let q = new Queue();
+   
+  q.enqueue(startVertex);
+   
+ var tim = setInterval(working,1);
+var curr;
+function working(){
+    if(curr)
+    document.getElementById(curr).style.background = "brown";
+    let currentVertex = q.peek();
+    t3 = currentVertex%50 + 1;
+    t4 = Math.floor(currentVertex/50) + 1;
+    curr = t4+"_"+t3;
+    if(currentVertex == endVertex || q.isEmpty())
+        clearInterval(tim);
+    else{
+        q.dequeue();
+        visitedVertices[currentVertex] = true;
+        var t3,t4;
+
+      
+      for(var i = 0;i<4;i++){
+          if(graph[currentVertex][i] != -1 && !visitedVertices[graph[currentVertex][i]]){
+              var t1,t2;
+              t1 = graph[currentVertex][i]%50 + 1;
+              t2 = Math.floor(graph[currentVertex][i]/50) + 1;
+              //window.alert(t2+"_"+t1);
+              document.getElementById(t2+"_"+t1).style.background = "red";
+              q.enqueue(graph[currentVertex][i]);
+              
+          }
+      }
+    }
+   document.getElementById(t4+"_"+t3).style.background = "blue"; 
+}
+}
+function dfs(){
+    var vis = new Array(2500);
+    var graph = construct_graphW();
+    var parent = new Array(2500);
+    var startVertex = (origin_row-1)*50 + eval(" origin_col-1");
+    var endVertex = (ter_row-1)*50 + eval("ter_col-1"); 
+    for(var i = 0;i<2500;i++)
+        vis[i] = false;
+   
+    var s = new Stack();
+    s.push(startVertex);
+     var t;
+    var timer = setInterval(dfsAnimation,10);
+   
+   function dfsAnimation(){
+       if(t){
+           document.getElementById(t).style.background = "brown";
+       }
+        var currV = s.pop();
+        vis[currV] = true;
+        var t1 = currV%50 + 1;
+        var t2 = Math.floor(currV/50) + 1;
+        t = t2+"_"+t1;
+        document.getElementById(t2+"_"+t1).style.background = "blue";
+
+        for(var i = 0;i<2500;i++){
+            if(!vis[i] && graph[currV][i] == 1 && W[i] != -1){
+                s.push(i);
+                parent[i] = currV;
+                var t1 = i%50 + 1;
+                var t2 = Math.floor(i/50) + 1;
+                document.getElementById(t2+"_"+t1).style.background = "red";
+                if(i == endVertex){
+                     document.getElementById(t2+"_"+t1).style.background = "blue";
+                          var k = endVertex;       
+   // window.alert(predecessors[predecessors[endVertex]]);
+                        while(parent[k] != startVertex){
+        
+                            var q = parent[k];
+                            var x1 = q%50 + 1;
+                            var x2 = Math.floor(q/50) + 1;
+                            p.push(q);
+                            document.getElementById(x2+"_"+x1).style.background = "yellow";
+                            if(q == startVertex)
+                                break;
+        k = q;
+       // window.alert(predecessors[endVertex]);
+    }
+                     clearInterval(timer);
+            }
+            }
+         
+        }
+       
+      // window.alert(s.length());
+    }
+    
+}
+function shortestPath() {
+    
+    var startVertex = (origin_row-1)*50 + eval(" origin_col-1");
+    var endVertex = (ter_row-1)*50 + eval("ter_col-1"); 
+    var edges = construct_graphW(); 
+    var numVertices = 2500;
+    var done = new Array(numVertices);
+    done[startVertex] = true;
+    var t3 = startVertex%50 + 1;
+    var t4 = Math.floor(startVertex/50) + 1;
+    document.getElementById(t4+"_"+t3).style.background = "brown";   
+  var pathLengths = new Array(numVertices);
+  var predecessors = new Array(numVertices);
+   
+  for (var i = 0; i < numVertices; i++) {//window.alert(edges[startVertex][i]);
+    pathLengths[i] = edges[startVertex][i];
+    if (edges[startVertex][i] != Infinity) {
+      predecessors[i] = startVertex;
+    }
+  }
+    
+  pathLengths[startVertex] = 0;
+
+   var slider = document.getElementById("myRange").value;
+   slider = 101-slider;
+var ti = setInterval(shortAnimate,1*slider);
+    var c;
+function shortAnimate() {
+   
+      if(c)
+      document.getElementById(c).style.background = "brown";
+    var closest = -1;
+    var t1,t2;
+    var closestDistance = Infinity;
+    for (var j = 0; j < numVertices; j++) {
+        
+      if (!done[j] && pathLengths[j] < closestDistance && W[j] != -1) {
+        closestDistance = pathLengths[j];
+        closest = j;
+      }
+    }
+    done[closest] = true;
+
+      var t5 = 0;
+     
+    for (var j = 0; j < numVertices; j++) {
+      if (!done[j] ) {
+        var possiblyCloserDistance = pathLengths[closest] + edges[closest][j];
+        if (possiblyCloserDistance < pathLengths[j]) {
+          pathLengths[j] = possiblyCloserDistance;
+          predecessors[j] = closest;
+        if(W[j] == 0){ 
+       // window.alert("hi");
+         t1 = j%50 + 1;
+         t2 = Math.floor(j/50) + 1;
+         document.getElementById(t2+"_"+t1).style.background = "red"; }
+      
+            if(j == endVertex)
+        {
+            t5 = 1;
+            break;
+        }
+        }
+      }
+    } 
+    if(W[closest] == 0){
+    t3 = closest%50 + 1;
+    t4 = Math.floor(closest/50) + 1;
+      c = t4+"_"+t3;
+       document.getElementById(c).style.background = "blue"; 
+    }
+      if(t5 == 1){
+          document.getElementById(c).style.background = "brown"; 
+           document.getElementById(t2+"_"+t1).style.background = "blue";
+      var k = endVertex;       
+   // window.alert(predecessors[predecessors[endVertex]]);
+    while(predecessors[k] != startVertex){
+        
+        var t = predecessors[k];
+        var x1 = t%50 + 1;
+        var x2 = Math.floor(t/50) + 1;
+        p.push(t);
+          document.getElementById(x2+"_"+x1).style.background = "yellow"; 
+        k = t;
+       // window.alert(predecessors[endVertex]);
+    }
+          clearInterval(timer);
+      }
+  }
+  
+ slider = document.getElementById("myRange").value;
+}
+
+function clearBoard(){
+   if(window.confirm("do you really want to clear the board")){
+    for(var i = 0;i<50;i++){
+        document.getElementById("myTable").deleteRow(0);
+    }
+    for(var i = 0;i<2500;i++){
+        //graph[i] = [];
+        W[i] = 0;
+    }
+   }
+    document.getElementById("CB").onclick = board();
+}
+// function for wall
+
+function addWall(){
+
+    var wall_col,wall_row,temp1;
+ 
+    var table = document.getElementById("myTable");
+    table.addEventListener("mousemove",Walling);
+       document.getElementById("src").onclick = function(){
+                table.removeEventListener("mousemove", Walling);
+                origin();
+            }
+       document.getElementById("ter").onclick = function(){
+                table.removeEventListener("mousemove", Walling);
+                end();
+            }
+       document.getElementById("kk").onclick = function(){
+                table.removeEventListener("mousemove", Walling);
+                if(algo == 1)
+                    shortestPath();
+                if(algo == 2)
+                    dfs();
+            }
+    function Walling(e){
+        if(!e)
+                e = window.event;
+        var target = e.srcElement || e.element;
+        var arr1 = target.id.split('_');
+        wall_row = arr1[0];
+        wall_col = arr1[1];
+        var i = (wall_row - 1)*50 + eval("wall_col - 1");
+       if(temp1 ){
+            temp1.style.background = "-moz-linear-gradient(top, #ffffff, #D1E3E9)";
+            temp1.style.background = "-webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#D1E3E9))";
+           W[i] = 0;
+        }
+        // window.alert(e.CLICK);
+        if(e.altKey){
+            //window.alert(e.button);
+             temp1.style.background = "black";//
+//window.alert(i);
+           // wall.push(i);
+            W[i] = -1;
+           // window.alert(i);
+        }
+      
+ 
+        temp1 = target;
+        
+        target.style.background = "black";
+        
+    }
+
+}
+
+function clearwall(){
+    for(var i =0;i<2500;i++){
+        if(W[i] == -1){
+            var x1 = i%50 + 1;
+            var x2 = Math.floor(i/50) + 1;
+            var temp = document.getElementById(x2+"_"+x1);
+            temp.style.background = "-moz-linear-gradient(top, #ffffff, #D1E3E9)";
+            temp.style.background = "-webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#D1E3E9))";
+            W[i] = 0;
+        }
+    }
+}
+
+function selectAlgo(){
+    document.getElementById("djk").onclick = function(){
+        algo = 1;
+      document.getElementById("result").innerHTML = "selected algo is dijkstra";
+    }
+    document.getElementById("dfs").onclick = function(){
+        algo = 2;
+      document.getElementById("result").innerHTML = "selected algo is dfs"; 
+    }
+}
+function impAlgo(){
+    if(algo == 1)
+       shortestPath();
+    if(algo ==2)
+        dfs();
+}
+
+function clearPath(){
+    for(var i = 0;i<p.length;i++){
+        var j = p[i];
+        t1 = j%50 + 1;
+         t2 = Math.floor(j/50) + 1;
+         document.getElementById(t2+"_"+t1).style.background = "brown"; 
+    }
+}
+</script>   
+</head>
+<body onload = "board()" >
+ 
+	<div class="navbar">
+ 		 <a href="pathfinder.html">Path finder</a>
+		  <div class="dropdown">
+ 		   <button class="dropbtn">Algorithms
+  			    <i class="fa fa-caret-down"></i>
+		    </button>
+ 		   <div class="dropdown-content">
+     		 <a href="javascript:selectAlgo()" id = "djk">Dijkstra's algorithm</a>
+     		 <a href="javascript:selectAlgo()" id = "dfs">DFS</a>
+   		 </div>
+ 		 </div>
+		<a href="javascript:clearBoard()" id = "CB">Clear board</a>
+		<a href="javascript:clearPath()">Clear path</a>
+		<a href="javascript:clearwall()">Clear wall</a>
+		<a href="javascript:addWall()" >Add wall</a>
+        
+	</div>
+	<br>
+	<div style = "text-align:center;" > 
+    <button  onclick ="origin()" id = "src"> source</button>
+	<button class = "sbutton" id="kk" onclick ="impAlgo()" > Start finding the path</button>
+    <button  onclick ="end()" id = "ter"> terminal</button>
+    Speed: <input type = "range" id = "myRange">
+	</div>
+	
+<br><br>
+   <div id="result"> result is</div>
+<br>
+<table id="myTable" border="1" style="border-collapse: collapse;" cellpadding="4" width = "100%" height = "100%">
+     
+    </table>
+<br> 
+</body>
+</html>
