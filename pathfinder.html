@@ -74,7 +74,6 @@ function board() {
     }
 var res = document.getElementById("result");
 res.innerHTML= "hi" ;   
-
 var temp2,temp3;
 function origin(){
         var mytable = document.getElementById("myTable");
@@ -101,7 +100,6 @@ function ori(e){
             }else{
             target.innerHTML = "s";
             temp2 = target;
-
         }
     
 }
@@ -157,7 +155,6 @@ function construct_graph(){
     return graph;
 }
 // queue implementation
-
 function Queue() {
    this.elements = [];
 Queue.prototype.enqueue = function (e) {
@@ -183,27 +180,21 @@ function Stack() {
    this.clear = clear;
    this.length = length;
 }
-
 function push(element) {
    this.dataStore[this.top++] = element;
 }
-
 function peek() {
    return this.dataStore[this.top-1];
 }
-
 function pop() {
    return this.dataStore[--this.top];
 }
-
 function clear() {
    this.top = 0;
 }
-
 function length() {
    return this.top;
 }
-
 function construct_graphW(){
 let graph = new Array(50*50);
     for(var i = 0;i<2500;i++){
@@ -221,22 +212,22 @@ let graph = new Array(50*50);
                 t = 0;
         }//window.alert("hi");
         //if(t == 1){
-        if((i%50)-1 >= 0)
-            graph[i][i-1] = 1;
-        if((i%50)+1 < 50)
-            graph[i][i+1] = 1;
-        if(i-50 >= 0)
-            graph[i][i-50] = 1;
         if(i+50 < 2500)
             graph[i][i+50] = 1;
+        if(i-50 >= 0)
+            graph[i][i-50] = 1;
+        if((i%50)+1 < 50)
+            graph[i][i+1] = 1;
+        if((i%50)-1 >= 0)
+            graph[i][i-1] = 1;
+        
+        
+        
     //}
     }
     return graph;
 }    
-
 // dijkstra algorithm
-
-
 function dijkstra() {
    
     var graph = construct_graph();
@@ -250,7 +241,6 @@ function dijkstra() {
       distances[i] = Infinity;
       visitedVertices[i] = false;
   }
-
   let q = new Queue();
    
   q.enqueue(startVertex);
@@ -270,7 +260,6 @@ function working(){
         q.dequeue();
         visitedVertices[currentVertex] = true;
         var t3,t4;
-
       
       for(var i = 0;i<4;i++){
           if(graph[currentVertex][i] != -1 && !visitedVertices[graph[currentVertex][i]]){
@@ -311,9 +300,8 @@ function dfs(){
         var t2 = Math.floor(currV/50) + 1;
         t = t2+"_"+t1;
         document.getElementById(t2+"_"+t1).style.background = "blue";
-
         for(var i = 0;i<2500;i++){
-            if(!vis[i] && graph[currV][i] == 1 && W[i] != -1){
+            if(!vis[i] && graph[i][currV] == 1 && W[i] != -1){
                 s.push(i);
                 parent[i] = currV;
                 var t1 = i%50 + 1;
@@ -367,7 +355,6 @@ function shortestPath() {
   }
     
   pathLengths[startVertex] = 0;
-
    var slider = document.getElementById("myRange").value;
    slider = 101-slider;
 var ti = setInterval(shortAnimate,1*slider);
@@ -387,7 +374,6 @@ function shortAnimate() {
       }
     }
     done[closest] = true;
-
       var t5 = 0;
      
     for (var j = 0; j < numVertices; j++) {
@@ -437,7 +423,6 @@ function shortAnimate() {
   
  slider = document.getElementById("myRange").value;
 }
-
 function clearBoard(){
    if(window.confirm("do you really want to clear the board")){
     for(var i = 0;i<50;i++){
@@ -451,9 +436,7 @@ function clearBoard(){
     document.getElementById("CB").onclick = board();
 }
 // function for wall
-
 function addWall(){
-
     var wall_col,wall_row,temp1;
  
     var table = document.getElementById("myTable");
@@ -482,8 +465,15 @@ function addWall(){
         wall_col = arr1[1];
         var i = (wall_row - 1)*50 + eval("wall_col - 1");
        if(temp1 ){
+           if(W[i] == -1){
+              // alert(temp1.style.background);
+               temp1.style.background = "black";
+               
+           }
+           else{
             temp1.style.background = "-moz-linear-gradient(top, #ffffff, #D1E3E9)";
             temp1.style.background = "-webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#D1E3E9))";
+           }
            W[i] = 0;
         }
         // window.alert(e.CLICK);
@@ -502,9 +492,7 @@ function addWall(){
         target.style.background = "black";
         
     }
-
 }
-
 function clearwall(){
     for(var i =0;i<2500;i++){
         if(W[i] == -1){
@@ -517,7 +505,6 @@ function clearwall(){
         }
     }
 }
-
 function selectAlgo(){
     document.getElementById("djk").onclick = function(){
         algo = 1;
@@ -534,13 +521,13 @@ function impAlgo(){
     if(algo ==2)
         dfs();
 }
-
 function clearPath(){
     for(var i = 0;i<p.length;i++){
         var j = p[i];
         t1 = j%50 + 1;
          t2 = Math.floor(j/50) + 1;
-         document.getElementById(t2+"_"+t1).style.background = "brown"; 
+         document.getElementById(t2+"_"+t1).style.background = "-moz-linear-gradient(top, #ffffff, #D1E3E9)";
+        document.getElementById(t2+"_"+t1).style.background = "-webkit-gradient(linear, 0% 0%, 0% 100%, from(#ffffff), to(#D1E3E9))"; 
     }
 }
 </script>   
@@ -549,15 +536,18 @@ function clearPath(){
  
 	<div class="navbar">
  		 <a href="pathfinder.html">Path finder</a>
+        
 		  <div class="dropdown">
- 		   <button class="dropbtn">Algorithms
+ 		   <button class="dropbtn" onmousemove="selectAlgo()">Algorithms
   			    <i class="fa fa-caret-down"></i>
 		    </button>
  		   <div class="dropdown-content">
-     		 <a href="javascript:selectAlgo()" id = "djk">Dijkstra's algorithm</a>
-     		 <a href="javascript:selectAlgo()" id = "dfs">DFS</a>
+     		 <a id = "djk">Dijkstra's algorithm</a>
+               <a id = "dfs">DFS</a>
+               
    		 </div>
  		 </div>
+        
 		<a href="javascript:clearBoard()" id = "CB">Clear board</a>
 		<a href="javascript:clearPath()">Clear path</a>
 		<a href="javascript:clearwall()">Clear wall</a>
@@ -573,7 +563,7 @@ function clearPath(){
 	</div>
 	
 <br><br>
-   <div id="result"> result is</div>
+   <div id="result"> Welcome, select an algorithm</div>
 <br>
 <table id="myTable" border="1" style="border-collapse: collapse;" cellpadding="4" width = "100%" height = "100%">
      
